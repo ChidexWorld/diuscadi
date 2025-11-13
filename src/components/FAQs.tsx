@@ -1,50 +1,96 @@
-export default function FAQs() {
+"use client"
+
+import React, { useState } from "react";
+import { ChevronDown, ChevronUp } from "lucide-react";
+
+interface FAQ {
+  question: string;
+  answer: string;
+}
+
+const faqs: FAQ[] = [
+  {
+    question: "How many participants can register?",
+    answer:
+      "There’s a limit of 800 registrants to attend on a first come first serve basis.",
+  },
+  {
+    question:
+      "How can I contact DIUSCADI for inquiries or partnership opportunities?",
+    answer:
+      "For inquiries or partnership opportunities, please contact DIUSCADI via email at info@diuscadi.org.ng or reach out to us through our phone number +234 803 590 6416. We look forward to hearing from you.",
+  },
+  {
+    question: "Are there any fees associated with attending DIUSCADI event?",
+    answer:
+      "No, there are no fees associated with attending the Life After School Career Development Seminar Series.",
+  },
+  {
+    question: "How can I support DIUSCADI as a sponsor or volunteer?",
+    answer:
+      "You can support DIUSCADI by visiting our sponsorship page at https://diuscadi.org.ng/sponsor or by contacting us directly at +234 803 590 6416.",
+  },
+  {
+    question:
+      "How can I stay updated on upcoming DIUSCADI events and workshops?",
+    answer:
+      "To stay updated on upcoming DIUSCADI seminars and workshops, follow our social media platforms and subscribe to our email for updates.",
+  },
+  {
+    question: "How can I participate in the LASCDSS workshops",
+    answer:
+      "Participation is strictly physical / in-person. There will however be a recording re-cap of some of the key moments so if you cannot make it in person do check out our YouTube for updates on the video recap",
+  },
+  {
+    question: "Where is the location for this event?",
+    answer:
+      "ASUU Multipurpose Hall, Nnamdi Azikiwe University Awka. (Google maps link: https://maps.app.goo.gl/1uyy5eZVVs548ren7)",
+  },
+];
+
+const FAQs: React.FC = () => {
+  const [openIndex, setOpenIndex] = useState<number | null>(null);
+
+  const toggleFAQ = (index: number) => {
+    setOpenIndex(openIndex === index ? null : index);
+  };
+
   return (
-    <section id="faqs" className="py-20 px-4 bg-gray-50">
-      <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">Frequently Asked Questions</h2>
-          <div className="w-24 h-1 bg-green-600 mx-auto mb-8"></div>
-        </div>
+    <section className="py-20 px-4 bg-gradient-to-b from-white to-[#f5f9ff]">
+      <div className="max-w-3xl mx-auto">
+        <h2 className="text-3xl md:text-5xl font-extrabold text-center text-[#001B3E] mb-12">
+          Frequently Asked <br /> Questions
+        </h2>
 
-        <div className="max-w-3xl mx-auto space-y-6">
-          <div className="bg-white p-8 rounded-lg shadow-md">
-            <h3 className="text-xl font-bold text-gray-900 mb-3">
-              Is there a registration fee?
-            </h3>
-            <p className="text-gray-700 text-lg">
-              No! There are no fees associated with attending the Life After School Career Development Seminar Series. It&apos;s completely free for all students and fresh graduates.
-            </p>
-          </div>
+        <div className="space-y-4">
+          {faqs.map((faq, index) => (
+            <div
+              key={index}
+              className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden"
+            >
+              <button
+                onClick={() => toggleFAQ(index)}
+                className="w-full flex justify-between items-center px-6 py-5 text-left font-semibold text-[#001B3E] hover:bg-gray-50 transition"
+              >
+                {faq.question}
+                {openIndex === index ? (
+                  <ChevronUp className="w-5 h-5" />
+                ) : (
+                  <ChevronDown className="w-5 h-5" />
+                )}
+              </button>
 
-          <div className="bg-white p-8 rounded-lg shadow-md">
-            <h3 className="text-xl font-bold text-gray-900 mb-3">
-              Who can attend?
-            </h3>
-            <p className="text-gray-700 text-lg">
-              The seminar is designed for undergraduate students (especially finalists) and fresh graduates from Nigerian tertiary institutions.
-            </p>
-          </div>
-
-          <div className="bg-white p-8 rounded-lg shadow-md">
-            <h3 className="text-xl font-bold text-gray-900 mb-3">
-              Where is the seminar held?
-            </h3>
-            <p className="text-gray-700 text-lg">
-              Our seminars are primarily held at Nnamdi Azikiwe University, Awka. Venue details for Series 5 will be shared with registered participants.
-            </p>
-          </div>
-
-          <div className="bg-white p-8 rounded-lg shadow-md">
-            <h3 className="text-xl font-bold text-gray-900 mb-3">
-              What will I learn?
-            </h3>
-            <p className="text-gray-700 text-lg">
-              You&apos;ll gain valuable insights on career development, entrepreneurship, professional skills, networking, and how to successfully transition from academic life to the professional world.
-            </p>
-          </div>
+              {openIndex === index && (
+                <div className="px-6 pb-5 text-[#001B3E] text-[15px] leading-relaxed border-t border-gray-100">
+                  {faq.answer}
+                </div>
+              )}
+            </div>
+          ))}
         </div>
       </div>
     </section>
   );
-}
+};
+
+export default FAQs;

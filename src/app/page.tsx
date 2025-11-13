@@ -9,6 +9,9 @@ import Footer from "@/components/Footer";
 import About from "@/components/About";
 import LiveStats from "@/components/LiveStats";
 import EventSchedule from "@/components/EventSchedule";
+import ApplicationSection from "@/components/ApplicationSection";
+import TestimonialSlider from "@/components/TestimonialSlider";
+import PartnersSection from "@/components/PartnersSection";
 
 export default function Home() {
   return (
@@ -21,8 +24,10 @@ export default function Home() {
       <EventSchedule/>
       <Speakers />
       <Schedule />
+      <TestimonialSlider/>
+      <PartnersSection/>
       <FAQs />
-      <Contact />
+      <ApplicationSection />
       <Footer />
     </div>
   );
