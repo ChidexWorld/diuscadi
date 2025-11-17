@@ -1,4 +1,5 @@
 // /types/index.ts
+
 export type ScheduleItem = {
   id?: string;
   time: string;
@@ -13,14 +14,27 @@ export type Speaker = {
   imageUrl?: string;
 };
 
+export type MediaItem = {
+  id?: string;
+  url: string;
+  type: "image" | "video";
+  createdAt: number; // Added createdAt property
+};
+
 export interface EventForm {
   id?: string;
   title: string;
   description: string;
+
   startTime: string;
   endTime: string;
   date: string;
+
   status: "scheduled" | "open" | "closed";
+
   schedules: ScheduleItem[];
   speakers?: Speaker[];
+
+  /** ✅ Required for Media upload */
+  media?: MediaItem[];
 }

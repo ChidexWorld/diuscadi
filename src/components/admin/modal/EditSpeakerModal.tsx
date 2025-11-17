@@ -20,93 +20,138 @@ export default function EditSpeakerModal({
   close,
   onSaved,
 }: Props) {
+  const { toast } = useToast();
+
   const [name, setName] = useState(speaker.name || "");
   const [bio, setBio] = useState(speaker.bio || "");
   const [file, setFile] = useState<File | null>(null);
-  const [loading, setLoading] = useState(false);
-const { toast } = useToast();
+  const [preview, setPreview] = useState<string | null>(
+    speaker.imageUrl || null
+  );
 
+  const [saving, setSaving] = useState(false);
+
+  // Upload to Cloudinary API
   const uploadToServer = async (file: File) => {
     const fd = new FormData();
     fd.append("file", file);
+
     const res = await fetch("/api/upload", { method: "POST", body: fd });
     const data = await res.json();
-    if (!res.ok) throw new Error(data?.error || "Upload failed");
+
+    if (!res.ok) {
+      throw new Error(data?.error || "Failed to upload image");
+    }
+
     return data.url as string;
   };
 
+  // Save Handler
   const handleSave = async () => {
     if (!event.id || !speaker.id) return;
-    setLoading(true);
+    setSaving(true);
+
     try {
       let imageUrl = speaker.imageUrl;
+
       if (file) {
         imageUrl = await uploadToServer(file);
       }
 
-      // replace speaker in array
       const updatedSpeakers = (event.speakers || []).map((s) =>
-        s.id === speaker.id
-          ? { ...s, name: name.trim(), bio: bio.trim(), imageUrl }
-          : s
+        s.id === speaker.id ? { ...s, name, bio, imageUrl } : s
       );
 
-      const ref = doc(db, "events", event.id);
-      await updateDoc(ref, { speakers: updatedSpeakers });
+      await updateDoc(doc(db, "events", event.id), {
+        speakers: updatedSpeakers,
+      });
 
-      toast("success", "Speaker updated");
+      toast("success", "Speaker updated successfully");
       onSaved?.();
       close();
     } catch (err: unknown) {
-      console.error(err);
-      const errorMessage = err instanceof Error ? err.message : "Failed to update speaker";
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to update speaker";
       toast("error", errorMessage);
     } finally {
-      setLoading(false);
+      setSaving(false);
     }
   };
 
+  const handleFileChange = (file?: File | null) => {
+    if (!file) {
+      setFile(null);
+      return;
+    }
+    setFile(file);
+    setPreview(URL.createObjectURL(file));
+  };
+
   return (
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-      <div className="bg-white p-6 rounded-xl w-full max-w-md max-h-[90vh] overflow-y-auto shadow-xl">
-        <h2 className="text-lg font-semibold mb-4">Edit Speaker</h2>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+      <div className="w-full max-w-lg rounded-xl bg-white p-6 shadow-xl">
+        <h2 className="text-xl font-semibold mb-4">Edit Speaker</h2>
 
-        <input
-          className="input mb-3"
-          placeholder="Name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-        />
+        {/* IMAGE PREVIEW */}
+        {preview && (
+          <div className="mb-4">
+            <img
+              src={preview}
+              alt="Preview"
+              className="h-32 w-32 rounded-full object-cover mx-auto border"
+            />
+          </div>
+        )}
 
-        <textarea
-          className="input mb-3"
-          placeholder="Bio"
-          value={bio}
-          onChange={(e) => setBio(e.target.value)}
-        />
-
+        {/* NAME INPUT */}
         <label className="block mb-3">
-          <span className="text-sm text-zinc-700">
-            Replace Photo (optional)
-          </span>
+          <span className="text-sm font-medium">Name</span>
           <input
-            type="file"
-            accept="image/*"
-            onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-            className="mt-2"
+            className="mt-1 w-full rounded-lg border p-2 outline-none focus:ring focus:ring-blue-200"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="Speaker Name"
           />
         </label>
 
-        <div className="flex justify-end gap-3 mt-4">
-          <button onClick={close} className="px-4 py-2">
+        {/* BIO INPUT */}
+        <label className="block mb-3">
+          <span className="text-sm font-medium">Bio</span>
+          <textarea
+            rows={4}
+            className="mt-1 w-full rounded-lg border p-2 outline-none focus:ring focus:ring-blue-200"
+            value={bio}
+            onChange={(e) => setBio(e.target.value)}
+            placeholder="Speaker Bio"
+          />
+        </label>
+
+        {/* FILE INPUT */}
+        <label className="block mb-4">
+          <span className="text-sm font-medium">Replace Photo (optional)</span>
+          <input
+            type="file"
+            accept="image/*"
+            className="mt-2 text-sm"
+            onChange={(e) => handleFileChange(e.target.files?.[0] ?? null)}
+          />
+        </label>
+
+        {/* ACTION BUTTONS */}
+        <div className="mt-6 flex justify-end gap-3">
+          <button
+            onClick={close}
+            className="rounded-lg px-4 py-2 text-gray-700 hover:bg-gray-100"
+          >
             Cancel
           </button>
+
           <button
             onClick={handleSave}
-            disabled={loading}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg"
+            disabled={saving}
+            className="rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 disabled:bg-blue-300"
           >
-            {loading ? "Saving..." : "Save"}
+            {saving ? "Saving..." : "Save Changes"}
           </button>
         </div>
       </div>

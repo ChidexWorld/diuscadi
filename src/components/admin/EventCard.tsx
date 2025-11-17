@@ -15,7 +15,7 @@ export default function EventCard({ event, onEdit, onDeleteRequest }: Props) {
     <div className="bg-white p-4 border rounded-xl shadow-sm flex flex-col justify-between">
       <div>
         <h3 className="font-semibold text-xl">
-          <Link href={`/events/${event.id}`}>{event.title}</Link>
+          <Link href={`/admin/events/${event.id}`}>{event.title}</Link>
         </h3>
         <p className="text-sm text-zinc-600">{event.description}</p>
       </div>
