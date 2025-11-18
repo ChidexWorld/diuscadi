@@ -44,7 +44,6 @@ const EventSchema = z.object({
     ),
   startTime: z.string().min(1, "Start time required"),
   endTime: z.string().min(1, "End time required"),
-  status: z.enum(["scheduled", "open", "closed"]),
   totalSeats: z.number().min(1, "Total seats must be at least 1"),
   schedules: z.array(ScheduleSchema).optional(),
 });
@@ -72,8 +71,8 @@ export default function CreateEventForm({ close, onSaved }: Props) {
       date: "",
       startTime: "",
       endTime: "",
-      status: "scheduled",
       totalSeats: 200, // default
+
       schedules: [],
     },
   });
@@ -93,28 +92,31 @@ export default function CreateEventForm({ close, onSaved }: Props) {
 
   const onSubmit = async (values: FormValues) => {
     try {
-      // If event is set to open -> deactivate all others
-      if (values.status === "open") {
-        const eventsRef = collection(db, "events");
-        const snap = await getDocs(eventsRef);
-        snap.forEach(async (docSnap) => {
-          await updateDoc(docSnap.ref, { isActive: false });
-        });
-      }
+      // 1️⃣ Get all existing events
+      const eventsSnapshot = await getDocs(collection(db, "events"));
 
+      // 2️⃣ Loop through and deactivate all
+      const updatePromises = eventsSnapshot.docs.map((docSnap) =>
+        updateDoc(docSnap.ref, { isActive: false })
+      );
+
+      await Promise.all(updatePromises);
+
+      // 3️⃣ Create the new event as active
       await addDoc(collection(db, "events"), {
         ...values,
-        schedules: values.schedules ?? [],
         totalSeats: values.totalSeats,
         seatsTaken: 0,
-        isActive: values.status === "open",
+        isActive: true, // new event is the only active one
         createdAt: serverTimestamp(),
       });
 
+      // 4️⃣ Log
       const user = auth.currentUser;
       await logActivity("New event created", values.title, user?.uid);
 
-      toast("success", "Event created");
+      toast("success", "Event created successfully");
+
       await onSaved();
       close();
     } catch (err: unknown) {
@@ -348,9 +350,12 @@ export default function CreateEventForm({ close, onSaved }: Props) {
             <button
               type="submit"
               disabled={isSubmitting}
-              className={`px-4 py-2 rounded-lg text-white ${
-                isSubmitting ? "bg-slate-400 cursor-not-allowed" : "bg-blue-600"
-              }`}
+              className={`px-4 py-2 rounded-lg text-white transition-all duration-300 active:scale-95
+    ${
+      isSubmitting
+        ? "bg-slate-400 cursor-not-allowed"
+        : "bg-blue-600 hover:bg-blue-700 hover:scale-[1.03] hover:shadow-lg hover:shadow-blue-500/30"
+    }`}
             >
               {isSubmitting ? "Creating..." : "Create"}
             </button>

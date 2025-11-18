@@ -30,8 +30,8 @@ export interface EventForm {
   endTime: string;
   date: string;
 
-  totalSeats?: number;
-  seatsTaken?: number;
+  totalSeats: number;
+  seatsTaken: number;
   isActive?: boolean;
 
   // status: "scheduled" | "open" | "closed";

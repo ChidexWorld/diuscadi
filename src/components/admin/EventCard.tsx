@@ -21,7 +21,14 @@ export default function EventCard({ event, onEdit, onDeleteRequest }: Props) {
       </div>
 
       <div className="flex items-center justify-between mt-4">
-        <p className="text-xs text-zinc-500">Status: {event.status}</p>
+        {/* Active Status with green/red coloring */}
+        <p
+          className={`text-xs font-medium ${
+            event.isActive ? "text-green-600" : "text-red-500"
+          }`}
+        >
+          {event.isActive ? "Active" : "Inactive"}
+        </p>
 
         <div className="flex gap-3">
           <button
@@ -30,6 +37,7 @@ export default function EventCard({ event, onEdit, onDeleteRequest }: Props) {
           >
             Edit
           </button>
+
           <button
             onClick={() => onDeleteRequest(event.id!)}
             className="text-red-500 text-sm cursor-pointer"
