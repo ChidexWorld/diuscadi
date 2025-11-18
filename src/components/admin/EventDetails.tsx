@@ -14,6 +14,7 @@ import CreateMediaModal from "./modal/CreateMediaModal";
 import Image from "next/image";
 import MediaPreviewModal from "./modal/MediaPreviewModal";
 import { useRouter } from "next/navigation";
+import { logActivity } from "@/utils/logActivity";
 
 interface Props {
   eventId: string;
@@ -47,8 +48,20 @@ export default function EventDetails({ eventId }: Props) {
     loadEvent();
   }, [loadEvent]);
 
-  const onSpeakerSaved = () => loadEvent();
-  const onMediaSaved = () => loadEvent();
+const onSpeakerSaved = async () => {
+  await logActivity(
+    "Speaker added or updated",
+    `Speaker updated for event "${event?.title}"`
+  );
+  loadEvent();
+};
+const onMediaSaved = async () => {
+  await logActivity(
+    "Media added",
+    `A new media item was added to event "${event?.title}"`
+  );
+  loadEvent();
+};
 
   const onEdit = (sp: Speaker) => {
     setEditingSpeaker(sp);
@@ -70,6 +83,12 @@ export default function EventDetails({ eventId }: Props) {
 
       await updateDoc(doc(db, "events", event.id), { speakers: updated });
 
+      // log
+      await logActivity(
+        "Speaker removed",
+        `A speaker was removed from event "${event.title}"`
+      );
+
       toast("success", "Speaker removed");
       setShowDelete(false);
       setDeleteSpeakerId(null);
@@ -86,6 +105,12 @@ export default function EventDetails({ eventId }: Props) {
       const updated = (event.media || []).filter((m) => m.id !== mediaId);
 
       await updateDoc(doc(db, "events", event.id), { media: updated });
+
+      // log
+      await logActivity(
+        "Media deleted",
+        `A media item was deleted from event "${event.title}"`
+      );
 
       toast("success", "Media deleted");
       setPreviewItem(null);
@@ -159,7 +184,7 @@ export default function EventDetails({ eventId }: Props) {
         </div>
 
         <div className="flex items-center gap-3">
-          <p className="text-sm text-zinc-500">Status: {event.status}</p>
+          {/* <p className="text-sm text-zinc-500">Status: {event.status}</p> */}
 
           <button
             onClick={() => setOpenAdd(true)}
@@ -174,6 +199,43 @@ export default function EventDetails({ eventId }: Props) {
           >
             + Add Media
           </button>
+        </div>
+      </div>
+
+      {/* EVENT SEATS SECTION */}
+      <div className="mt-8">
+        <h2 className="text-xl font-semibold">Event Seats</h2>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
+          <div className="p-4 border rounded-lg bg-white">
+            <p className="text-sm text-zinc-500">Total Seats</p>
+            <p className="font-semibold">{event.totalSeats ?? "Not set"}</p>
+          </div>
+
+          <div className="p-4 border rounded-lg bg-white">
+            <p className="text-sm text-zinc-500">Seats Taken</p>
+            <p className="font-semibold">{event.seatsTaken ?? 0}</p>
+          </div>
+
+          <div className="p-4 border rounded-lg bg-white">
+            <p className="text-sm text-zinc-500">Seats Left</p>
+            <p className="font-semibold">
+              {event.totalSeats
+                ? event.totalSeats - (event.seatsTaken ?? 0)
+                : "Not set"}
+            </p>
+          </div>
+
+          <div className="p-4 border rounded-lg bg-white">
+            <p className="text-sm text-zinc-500">Active Status</p>
+            <p
+              className={`font-semibold ${
+                event.isActive ? "text-green-600" : "text-red-600"
+              }`}
+            >
+              {event.isActive ? "Active" : "Inactive"}
+            </p>
+          </div>
         </div>
       </div>
 

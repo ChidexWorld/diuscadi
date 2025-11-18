@@ -6,14 +6,17 @@ import { motion } from "framer-motion";
 import { useFieldArray, useForm, Controller } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { addDoc, collection, serverTimestamp } from "firebase/firestore";
+import {
+  addDoc,
+  collection,
+  serverTimestamp,
+  getDocs,
+  updateDoc,
+} from "firebase/firestore";
 import { db } from "@/config/firebase";
 import { useToast } from "@/components/ui/ToastProvider";
-
-type Props = {
-  close: () => void;
-  onSaved: () => Promise<void>;
-};
+import { logActivity } from "@/utils/logActivity";
+import { auth } from "@/config/firebase";
 
 /**
  * Zod schema for validation
@@ -42,10 +45,16 @@ const EventSchema = z.object({
   startTime: z.string().min(1, "Start time required"),
   endTime: z.string().min(1, "End time required"),
   status: z.enum(["scheduled", "open", "closed"]),
+  totalSeats: z.number().min(1, "Total seats must be at least 1"),
   schedules: z.array(ScheduleSchema).optional(),
 });
 
 type FormValues = z.infer<typeof EventSchema>;
+
+type Props = {
+  close: () => void;
+  onSaved: () => Promise<void>;
+};
 
 export default function CreateEventForm({ close, onSaved }: Props) {
   const { toast } = useToast();
@@ -64,6 +73,7 @@ export default function CreateEventForm({ close, onSaved }: Props) {
       startTime: "",
       endTime: "",
       status: "scheduled",
+      totalSeats: 200, // default
       schedules: [],
     },
   });
@@ -83,11 +93,26 @@ export default function CreateEventForm({ close, onSaved }: Props) {
 
   const onSubmit = async (values: FormValues) => {
     try {
+      // If event is set to open -> deactivate all others
+      if (values.status === "open") {
+        const eventsRef = collection(db, "events");
+        const snap = await getDocs(eventsRef);
+        snap.forEach(async (docSnap) => {
+          await updateDoc(docSnap.ref, { isActive: false });
+        });
+      }
+
       await addDoc(collection(db, "events"), {
         ...values,
         schedules: values.schedules ?? [],
+        totalSeats: values.totalSeats,
+        seatsTaken: 0,
+        isActive: values.status === "open",
         createdAt: serverTimestamp(),
       });
+
+      const user = auth.currentUser;
+      await logActivity("New event created", values.title, user?.uid);
 
       toast("success", "Event created");
       await onSaved();
@@ -131,6 +156,7 @@ export default function CreateEventForm({ close, onSaved }: Props) {
         <h2 className="text-xl font-bold mb-4">Create Event</h2>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          {/* Title */}
           <div>
             <label className="text-sm font-medium block mb-1">Title</label>
             <input
@@ -146,6 +172,7 @@ export default function CreateEventForm({ close, onSaved }: Props) {
             )}
           </div>
 
+          {/* Description */}
           <div>
             <label className="text-sm font-medium block mb-1">
               Description
@@ -158,7 +185,7 @@ export default function CreateEventForm({ close, onSaved }: Props) {
             />
           </div>
 
-          {/* DATE FIELD FIXED */}
+          {/* Date */}
           <div>
             <label className="text-sm font-medium block mb-1">Date</label>
             <input
@@ -206,6 +233,26 @@ export default function CreateEventForm({ close, onSaved }: Props) {
             </div>
           </div>
 
+          {/* Total Seats */}
+          <div>
+            <label className="text-sm font-medium block mb-1">
+              Total Seats
+            </label>
+            <input
+              type="number"
+              className="input w-full"
+              {...register("totalSeats", { valueAsNumber: true })}
+              disabled={isSubmitting}
+              placeholder="200"
+            />
+            {errors.totalSeats && (
+              <p className="text-xs text-red-600 mt-1">
+                {errors.totalSeats.message}
+              </p>
+            )}
+          </div>
+
+          {/* Status
           <div>
             <label className="text-sm font-medium block mb-1">Status</label>
             <Controller
@@ -223,7 +270,7 @@ export default function CreateEventForm({ close, onSaved }: Props) {
                 </select>
               )}
             />
-          </div>
+          </div> */}
 
           {/* Schedules */}
           <div>

@@ -1,6 +1,14 @@
-import type { Activity } from "../admin/RecentActivitySection";
+export interface ActivityItemProps {
+  action: string;
+  detail: string;
+  time: string; // already formatted (e.g. "2 hours ago")
+}
 
-export default function ActivityItem({ action, detail, time }: Activity) {
+export default function ActivityItem({
+  action,
+  detail,
+  time,
+}: ActivityItemProps) {
   return (
     <div className="flex items-center justify-between py-3 border-b border-zinc-100 last:border-0">
       <div>

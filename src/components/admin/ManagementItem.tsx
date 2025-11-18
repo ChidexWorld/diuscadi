@@ -24,7 +24,7 @@ export default function ManagementSection() {
       title: "Speakers",
       description: "Manage speaker profiles and bios",
       icon: Mic,
-      href: "/admin/speakers",
+      href: "/admin/events",
       color: "bg-purple-500",
       hoverColor: "hover:bg-purple-600",
     },

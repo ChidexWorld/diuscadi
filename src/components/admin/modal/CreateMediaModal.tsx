@@ -3,8 +3,9 @@
 import { useState } from "react";
 import { EventForm, MediaItem } from "@/types";
 import { updateDoc, doc } from "firebase/firestore";
-import { db } from "@/config/firebase";
+import { db, auth } from "@/config/firebase";
 import { useToast } from "@/components/ui/ToastProvider";
+import { logActivity } from "@/utils/logActivity";
 import Image from "next/image";
 
 interface Props {
@@ -17,24 +18,30 @@ export default function CreateMediaModal({ event, close, onSaved }: Props) {
   const { toast } = useToast();
   const [files, setFiles] = useState<File[]>([]);
   const [loading, setLoading] = useState(false);
-const [preview, setPreview] = useState<(string | File)[]>([]);
+  const [preview, setPreview] = useState<(string | File)[]>([]);
 
+  // Handle file selection
   const onFileChange = (ev: React.ChangeEvent<HTMLInputElement>) => {
     const selected = Array.from(ev.target.files || []);
     setFiles(selected);
     setPreview(selected.map((f) => URL.createObjectURL(f)));
   };
 
+  // Upload media to Cloudinary
   const uploadToCloudinary = async (file: File) => {
+    const CLOUD_NAME = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME!;
+    const PRESET = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET!;
+
+    if (!CLOUD_NAME || !PRESET) {
+      throw new Error("Missing Cloudinary environment variables");
+    }
+
     const fd = new FormData();
     fd.append("file", file);
-    fd.append(
-      "upload_preset",
-      process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET!
-    );
+    fd.append("upload_preset", PRESET);
 
     const res = await fetch(
-      `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/upload`,
+      `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/upload`,
       { method: "POST", body: fd }
     );
 
@@ -42,15 +49,17 @@ const [preview, setPreview] = useState<(string | File)[]>([]);
     if (!res.ok) throw new Error(data.error?.message || "Upload failed");
 
     return {
-      id: crypto.randomUUID(), // 🔥 UNIQUE ID FIX
+      id: crypto.randomUUID(),
       url: data.secure_url,
       type: file.type.startsWith("video") ? "video" : "image",
       createdAt: Date.now(),
     } satisfies MediaItem;
   };
 
+  // Save media
   const handleSave = async () => {
     if (!event.id) return;
+
     if (files.length === 0) {
       toast("error", "Please select at least one file");
       return;
@@ -62,20 +71,27 @@ const [preview, setPreview] = useState<(string | File)[]>([]);
       const uploaded: MediaItem[] = [];
 
       for (const f of files) {
-        const uploadedItem = await uploadToCloudinary(f);
-        uploaded.push(uploadedItem);
+        const item = await uploadToCloudinary(f);
+        uploaded.push(item);
       }
 
       const finalMedia = [...(event.media || []), ...uploaded];
 
       await updateDoc(doc(db, "events", event.id), { media: finalMedia });
 
+      // 🔥 Activity Log
+      const user = auth.currentUser;
+      await logActivity(
+        "Event media uploaded",
+        `${uploaded.length} file(s) added to ${event.title}`,
+        user?.uid
+      );
+
       toast("success", "Media uploaded successfully");
       onSaved?.();
       close();
     } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : "Upload failed";
-      toast("error", errorMessage);
+      toast("error", err instanceof Error ? err.message : "Upload failed");
     } finally {
       setLoading(false);
     }
@@ -95,16 +111,16 @@ const [preview, setPreview] = useState<(string | File)[]>([]);
           className="w-full mb-4"
         />
 
-        {/* PREVIEWS */}
+        {/* PREVIEW GRID */}
         <div className="grid grid-cols-3 gap-3 mb-4">
-          {preview.map((file, i) => {
+          {preview.map((item, i) => {
             const isVideo =
-              typeof file === "string"
-                ? file.endsWith(".mp4") || file.startsWith("blob:") // blob video fallback
-                : file.type?.startsWith("video");
+              typeof item === "string"
+                ? item.startsWith("blob:") // blob can't be trusted by extension
+                : item.type?.startsWith("video");
 
             const src =
-              typeof file === "string" ? file : URL.createObjectURL(file);
+              typeof item === "string" ? item : URL.createObjectURL(item);
 
             return (
               <div
@@ -120,10 +136,12 @@ const [preview, setPreview] = useState<(string | File)[]>([]);
                     loop
                   />
                 ) : (
+                  // prevent next/image error by disabling optimization
                   <Image
                     src={src}
                     alt={`Preview ${i}`}
                     fill
+                    unoptimized
                     className="object-cover"
                   />
                 )}
@@ -132,6 +150,7 @@ const [preview, setPreview] = useState<(string | File)[]>([]);
           })}
         </div>
 
+        {/* FOOTER */}
         <div className="flex justify-end gap-3 mt-4">
           <button onClick={close} className="px-4 py-2">
             Cancel

@@ -30,11 +30,23 @@ export interface EventForm {
   endTime: string;
   date: string;
 
-  status: "scheduled" | "open" | "closed";
+  totalSeats?: number;
+  seatsTaken?: number;
+  isActive?: boolean;
+
+  // status: "scheduled" | "open" | "closed";
 
   schedules: ScheduleItem[];
   speakers?: Speaker[];
 
   /** ✅ Required for Media upload */
   media?: MediaItem[];
+}
+
+export interface activities {
+  id: string; // auto or custom
+  action: string; // "Event created"
+  detail: string; // "Tech Conference"
+  createdAt: number; // timestamp (Date.now())
+  meta?: { eventId?: string; speakerId?: string; mediaId?: string }; // optional eventId, speakerId, mediaId...
 }

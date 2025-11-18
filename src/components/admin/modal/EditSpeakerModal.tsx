@@ -6,6 +6,7 @@ import { EventForm, Speaker } from "@/types";
 import { doc, updateDoc } from "firebase/firestore";
 import { db } from "@/config/firebase";
 import { useToast } from "@/components/ui/ToastProvider";
+import { logActivity } from "@/utils/logActivity";
 
 interface Props {
   event: EventForm;
@@ -31,7 +32,6 @@ export default function EditSpeakerModal({
 
   const [saving, setSaving] = useState(false);
 
-  // Upload to Cloudinary API
   const uploadToServer = async (file: File) => {
     const fd = new FormData();
     fd.append("file", file);
@@ -46,7 +46,6 @@ export default function EditSpeakerModal({
     return data.url as string;
   };
 
-  // Save Handler
   const handleSave = async () => {
     if (!event.id || !speaker.id) return;
     setSaving(true);
@@ -65,6 +64,12 @@ export default function EditSpeakerModal({
       await updateDoc(doc(db, "events", event.id), {
         speakers: updatedSpeakers,
       });
+
+      // ✅ ACTIVITY LOG (matching your exact API)
+      await logActivity(
+        "Speaker updated",
+        `Speaker "${name}" was updated for event "${event.title}"`
+      );
 
       toast("success", "Speaker updated successfully");
       onSaved?.();
@@ -92,7 +97,6 @@ export default function EditSpeakerModal({
       <div className="w-full max-w-lg rounded-xl bg-white p-6 shadow-xl">
         <h2 className="text-xl font-semibold mb-4">Edit Speaker</h2>
 
-        {/* IMAGE PREVIEW */}
         {preview && (
           <div className="mb-4">
             <img
@@ -103,7 +107,6 @@ export default function EditSpeakerModal({
           </div>
         )}
 
-        {/* NAME INPUT */}
         <label className="block mb-3">
           <span className="text-sm font-medium">Name</span>
           <input
@@ -114,7 +117,6 @@ export default function EditSpeakerModal({
           />
         </label>
 
-        {/* BIO INPUT */}
         <label className="block mb-3">
           <span className="text-sm font-medium">Bio</span>
           <textarea
@@ -126,7 +128,6 @@ export default function EditSpeakerModal({
           />
         </label>
 
-        {/* FILE INPUT */}
         <label className="block mb-4">
           <span className="text-sm font-medium">Replace Photo (optional)</span>
           <input
@@ -137,7 +138,6 @@ export default function EditSpeakerModal({
           />
         </label>
 
-        {/* ACTION BUTTONS */}
         <div className="mt-6 flex justify-end gap-3">
           <button
             onClick={close}

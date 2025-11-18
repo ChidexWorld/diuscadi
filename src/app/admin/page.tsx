@@ -12,7 +12,7 @@ export default function DashboardPage() {
         <Header />
         <QuickStatsSection />
         <ManagementSection />
-        <QuickActionsSection />
+        {/* <QuickActionsSection /> */}
         <RecentActivitySection />
       </div>
     </div>

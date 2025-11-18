@@ -5,6 +5,7 @@ import { useState } from "react";
 import { doc, updateDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "@/config/firebase";
 import { EventForm, ScheduleItem } from "@/types";
+import { logActivity } from "@/utils/logActivity"; // Activity logger
 
 interface Props {
   event: EventForm;
@@ -40,20 +41,32 @@ export default function EditEventModal({ event, close, onSaved }: Props) {
 
   const saveChanges = async () => {
     if (!event.id) return;
+
     const ref = doc(db, "events", event.id);
     await updateDoc(ref, {
       title: form.title,
       description: form.description,
       startTime: form.startTime,
       endTime: form.endTime,
-      status: form.status,
+
+      // NEW FIELDS
+      totalSeats: form.totalSeats ?? 0,
+      seatsTaken: form.seatsTaken ?? 0,
+      isActive: form.isActive ?? true,
+
       schedules: form.schedules,
       speakers: form.speakers || [],
       updatedAt: serverTimestamp(),
     });
+
+    // Log activity
+    await logActivity("Event Updated", `Edited event: ${form.title}`);
+
     onSaved?.();
     close();
   };
+
+  const seatsLeft = (form.totalSeats ?? 0) - (form.seatsTaken ?? 0);
 
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
@@ -89,18 +102,57 @@ export default function EditEventModal({ event, close, onSaved }: Props) {
           />
         </div>
 
-        <select
-          className="input mt-3"
-          value={form.status}
-          onChange={(e) =>
-            setForm({ ...form, status: e.target.value as EventForm["status"] })
-          }
-        >
-          <option value="scheduled">Scheduled</option>
-          <option value="open">Open</option>
-          <option value="closed">Closed</option>
-        </select>
+        {/* ---------------- SEATS SECTION ---------------- */}
+        <h3 className="font-medium text-lg mt-5">Event Seats</h3>
 
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
+          <div>
+            <p className="text-sm text-zinc-500 mb-1">Total Seats</p>
+            <input
+              type="number"
+              className="input"
+              value={form.totalSeats ?? ""}
+              onChange={(e) =>
+                setForm({ ...form, totalSeats: Number(e.target.value) })
+              }
+              placeholder="Total Seats"
+            />
+          </div>
+
+          <div>
+            <p className="text-sm text-zinc-500 mb-1">Seats Taken</p>
+            <input
+              type="number"
+              className="input"
+              value={form.seatsTaken ?? ""}
+              onChange={(e) =>
+                setForm({ ...form, seatsTaken: Number(e.target.value) })
+              }
+              placeholder="Seats Taken"
+            />
+          </div>
+
+          <div>
+            <p className="text-sm text-zinc-500 mb-1">Seats Left</p>
+            <input disabled className="input bg-zinc-100" value={seatsLeft} />
+          </div>
+
+          <div>
+            <p className="text-sm text-zinc-500 mb-1">Event Active?</p>
+            <select
+              className="input"
+              value={form.isActive ? "active" : "inactive"}
+              onChange={(e) =>
+                setForm({ ...form, isActive: e.target.value === "active" })
+              }
+            >
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+            </select>
+          </div>
+        </div>
+
+        {/* ---------------- SCHEDULES ---------------- */}
         <h3 className="font-medium text-lg mt-4 mb-2">Schedules</h3>
 
         {form.schedules.map((sch, idx) => (
@@ -142,6 +194,7 @@ export default function EditEventModal({ event, close, onSaved }: Props) {
           + Add Schedule
         </button>
 
+        {/* ----------- ACTIONS ----------- */}
         <div className="flex justify-end gap-3 mt-6">
           <button onClick={close} className="px-4 py-2">
             Cancel

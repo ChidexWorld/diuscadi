@@ -3,9 +3,11 @@
 import { useState } from "react";
 import { EventForm, Speaker } from "@/types";
 import { doc, updateDoc, arrayUnion } from "firebase/firestore";
-import { db } from "@/config/firebase";
+import { db, auth } from "@/config/firebase";
 import { useToast } from "@/components/ui/ToastProvider";
+import { logActivity } from "@/utils/logActivity";
 import { X } from "lucide-react";
+import Image from "next/image";
 
 interface Props {
   event: EventForm;
@@ -21,34 +23,35 @@ export default function AddSpeakerModal({ event, close, onSaved }: Props) {
 
   const { toast } = useToast();
 
- const uploadToCloudinary = async (file: File) => {
-   const CLOUD_NAME = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME!;
-   const UPLOAD_PRESET = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET!;
+  /**
+   * Upload speaker image to Cloudinary
+   */
+  const uploadToCloudinary = async (file: File) => {
+    const CLOUD_NAME = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME!;
+    const PRESET = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET!;
 
-   if (!CLOUD_NAME) {
-     throw new Error("Cloudinary cloud name missing — check .env.local");
-   }
+    if (!CLOUD_NAME || !PRESET) {
+      throw new Error("Cloudinary keys missing. Check .env.local");
+    }
 
-   if (!UPLOAD_PRESET) {
-     throw new Error("Cloudinary upload preset missing — check .env.local");
-   }
+    const fd = new FormData();
+    fd.append("file", file);
+    fd.append("upload_preset", PRESET);
 
-   const fd = new FormData();
-   fd.append("file", file);
-   fd.append("upload_preset", UPLOAD_PRESET);
+    const res = await fetch(
+      `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,
+      { method: "POST", body: fd }
+    );
 
-   const res = await fetch(
-     `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,
-     { method: "POST", body: fd }
-   );
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error?.message || "Upload failed");
 
-   const data = await res.json();
+    return data.secure_url as string;
+  };
 
-   if (!res.ok) throw new Error(data.error?.message || "Upload failed");
-   return data.secure_url as string;
- };
-
-
+  /**
+   * Save speaker to event
+   */
   const handleSave = async () => {
     if (!name.trim()) {
       toast("error", "Please enter speaker name");
@@ -58,7 +61,9 @@ export default function AddSpeakerModal({ event, close, onSaved }: Props) {
     setLoading(true);
 
     try {
-      let imageUrl: string | undefined = undefined;
+      const user = auth.currentUser;
+
+      let imageUrl: string | undefined;
       if (file) imageUrl = await uploadToCloudinary(file);
 
       const speaker: Speaker = {
@@ -69,9 +74,17 @@ export default function AddSpeakerModal({ event, close, onSaved }: Props) {
       };
 
       const ref = doc(db, "events", event.id!);
+
       await updateDoc(ref, {
         speakers: arrayUnion(speaker),
       });
+
+      // 🔥 Log activity
+      await logActivity(
+        "Speaker added",
+        `${speaker.name} added to ${event.title}`,
+        user?.uid
+      );
 
       toast("success", "Speaker added");
       onSaved?.();
@@ -98,7 +111,7 @@ export default function AddSpeakerModal({ event, close, onSaved }: Props) {
           </button>
         </div>
 
-        {/* Content */}
+        {/* Body */}
         <div className="p-6 space-y-4">
           <div>
             <label className="block text-sm font-medium mb-1">
@@ -123,12 +136,11 @@ export default function AddSpeakerModal({ event, close, onSaved }: Props) {
             />
           </div>
 
-          {/* Image Upload */}
+          {/* Image */}
           <div>
             <label className="block text-sm font-medium mb-2">
               Speaker Photo
             </label>
-
             <div className="border-2 border-dashed rounded-xl p-5 text-center hover:bg-gray-50 transition cursor-pointer">
               <input
                 type="file"
@@ -147,9 +159,12 @@ export default function AddSpeakerModal({ event, close, onSaved }: Props) {
                 </label>
               ) : (
                 <div className="flex flex-col items-center gap-2">
-                  <img
+                  <Image
                     src={URL.createObjectURL(file)}
                     alt="preview"
+                    width={96}
+                    height={96}
+                    unoptimized
                     className="w-24 h-24 rounded-full object-cover"
                   />
                   <p className="text-sm text-gray-700">{file.name}</p>
