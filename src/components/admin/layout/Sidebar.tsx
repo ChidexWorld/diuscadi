@@ -26,12 +26,11 @@ export default function Sidebar({
 
   // Notify dashboard layout when collapsed/expanded
   const toggleSidebar = () => {
-    setCollapsed((prev) => {
-      const next = !prev;
-      onToggleCollapse(next);
-      return next;
-    });
+    const next = !collapsed;
+    setCollapsed(next); // update Sidebar's own state
+    onToggleCollapse(next); // notify parent safely
   };
+
 
   // Add `exact: true` for links that should match only exactly (no nested routes)
   const links = [

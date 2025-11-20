@@ -50,3 +50,23 @@ export interface activities {
   createdAt: number; // timestamp (Date.now())
   meta?: { eventId?: string; speakerId?: string; mediaId?: string }; // optional eventId, speakerId, mediaId...
 }
+
+// Types
+ export   type Member = {
+id: string;
+firstName: string;
+lastName: string;
+email: string;
+regNumber?: string;
+course?: string;
+department?: string;
+faculty?: string;
+level?: string;
+whatsapp?: string;
+gender?: string;
+university?: string;
+referrer?: string;
+expectations?: string;
+eventId?: string;
+registeredAt?: { seconds: number; nanoseconds: number } | string | null;
+};
