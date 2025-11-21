@@ -1,6 +1,7 @@
 // app/events/gallery/page.tsx (Server Component)
 
 import EventsGalleryClient from "@/components/EventsGalleryClient";
+import Footer from "@/components/Footer";
 import Header from "@/components/Header";
 
 export const metadata = {
@@ -12,6 +13,7 @@ export default async function EventsGalleryPage() {
     <div>
         <Header/>
       <EventsGalleryClient />
+      <Footer/>
     </div>
   );
 }

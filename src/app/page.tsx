@@ -20,7 +20,7 @@ export default function Home() {
       <Hero />
       <Event />
       <About/>
-      <LiveStats />
+      {/* <LiveStats />
       <EventSchedule/>
       <Speakers />
       <Schedule />
@@ -28,7 +28,7 @@ export default function Home() {
       <PartnersSection/>
       <FAQs />
       <ApplicationSection />
-      <Footer />
+      <Footer /> */}
     </div>
   );
 }

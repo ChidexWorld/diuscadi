@@ -58,7 +58,7 @@ const EventSchedule = () => {
     <section className="bg-white px-6 sm:px-12 py-16">
       <div className="max-w-5xl mx-auto">
         {/* Title */}
-        <h2 className="text-[#0067ff] text-3xl sm:text-4xl font-extrabold mb-6">
+        <h2 className="text-[#0067ff] text-3xl sm:text-6xl font-semibold mb-6">
           Event Schedule
         </h2>
 
