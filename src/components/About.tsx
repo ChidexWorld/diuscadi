@@ -110,7 +110,6 @@ export default function About() {
       {/* Content Section */}
       <div className="flex flex-col md:flex-row items-center md:items-start justify-center md:space-x-10 w-full max-w-6xl mx-auto">
         {/* IMAGE — RIGHT ON DESKTOP, TOP ON MOBILE */}
-        {/* IMAGE — RIGHT ON DESKTOP, TOP ON MOBILE */}
         <motion.div
           variants={fadeUp}
           transition={{ duration: 0.7, delay: 0.1 }}
@@ -125,13 +124,15 @@ export default function About() {
               className="w-full h-auto rounded-lg shadow-md object-cover"
             />
 
-            {/* ORANGE CARD (EXTENDING OUTSIDE IMAGE) */}
-            <div className=" absolute top-6  right-[-40px] /* makes it extend outside the border */  sm:right-[-60px] /* larger offset on bigger screens */ bg-orange-400 text-white p-4 rounded-lg shadow-lg max-w-[260px] text-sm sm:text-base">
+            {/* DESKTOP FLOATING CARD */}
+            <div className="hidden md:block absolute top-6 right-[-40px] sm:right-[-60px] h-30  bg-orange-400 text-white p-4 rounded-lg shadow-lg max-w-[300px] text-sm sm:text-base">
               <p className="mb-2">
                 The theme of LASSCADS series 5 of is: Turn Your Skills into
                 Wealth for Life-After School. You cannot afford to miss it. 🚀
               </p>
-              <p className="font-semibold">Saturday, 24th July 2025</p>
+              <p className="font-sm text-end text-[#001d33] pt-5">
+                Saturday, 24th July 2025
+              </p>
             </div>
           </div>
         </motion.div>
@@ -165,6 +166,17 @@ export default function About() {
             <button className="mt-4 border border-[#0067ff] text-[#0067ff] bg-white px-6 py-2 rounded-full hover:bg-[#0067ff] hover:text-white transition-all text-sm sm:text-base">
               See all Volunteers
             </button>
+          </div>
+
+          {/* MOBILE VERSION OF ORANGE CARD */}
+          <div className="md:hidden mt-6 bg-orange-400 text-white p-4 rounded-lg shadow-lg max-w-[300px] text-sm h-25 ">
+            <p className="mb-2">
+              The theme of LASSCADS series 5 of is: Turn Your Skills into Wealth
+              for Life-After School. You cannot afford to miss it. 🚀
+            </p>
+            <p className="font-sm text-end text-[#001d33] pt-6">
+              Saturday, 24th July 2025
+            </p>{" "}
           </div>
         </motion.div>
       </div>
