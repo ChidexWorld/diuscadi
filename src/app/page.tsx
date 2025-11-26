@@ -2,7 +2,6 @@ import Header from "@/components/Header";
 import Hero from "@/components/Hero";
 import Event from "@/components/Event";
 import Speakers from "@/components/Speakers";
-import Schedule from "@/components/Schedule";
 import FAQs from "@/components/FAQs";
 import Contact from "@/components/Contact";
 import Footer from "@/components/Footer";
@@ -23,7 +22,6 @@ export default function Home() {
       <LiveStats />
       <EventSchedule/>
       <Speakers />
-      <Schedule />
       <TestimonialSlider/>
       <PartnersSection/>
       <FAQs />
