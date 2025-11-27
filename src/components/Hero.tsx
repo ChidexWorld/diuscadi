@@ -63,7 +63,7 @@ export default function Hero() {
           className="flex flex-col sm:flex-row gap-4 justify-center items-center"
         >
           <a
-            href="#register"
+            href="/registerMember"
             className="bg-blue-600 text-white px-8 sm:px-10 py-4 rounded-full text-lg font-bold hover:bg-blue-700 transition-all shadow-lg hover:shadow-xl uppercase w-full sm:w-auto text-center"
           >
             Register for Free

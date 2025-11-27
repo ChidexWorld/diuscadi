@@ -5,8 +5,8 @@ import Image from "next/image";
 import { useState, useEffect } from "react";
 
 export default function Header() {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isFixed, setIsFixed] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false); // Fixed: added state
 
   useEffect(() => {
     const handleScroll = () => {
@@ -18,11 +18,10 @@ export default function Header() {
   }, []);
 
   const navLinks = [
-    // { name: "About", href: "#about" },
+    { name: "Abouts", href: "#about" },
     { name: "Speakers", href: "#speakers" },
     { name: "Schedule", href: "#schedule" },
     { name: "FAQs", href: "#faqs" },
-    { name: "Contact", href: "#contact" },
   ];
 
   return (
@@ -64,7 +63,9 @@ export default function Header() {
           {/* Desktop Button */}
           <div className="hidden lg:block">
             <Link
-              href="#register"
+              href="/registerMember"
+              target="_blank"
+              rel="noopener noreferrer"
               className="bg-blue-600 text-white px-6 py-3 rounded-full hover:bg-blue-700 transition font-semibold uppercase text-sm"
             >
               Register Now
@@ -116,12 +117,16 @@ export default function Header() {
                 </Link>
               ))}
 
-              <Link
-                href="#register"
-                onClick={() => setIsMenuOpen(false)}
-                className="bg-blue-600 text-white px-6 py-3 rounded-full text-center hover:bg-blue-700 transition font-semibold uppercase text-sm"
-              >
-                Register Now
+              {/* Mobile Register Button */}
+              <Link href="/registerMember" passHref>
+                <a
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() => setIsMenuOpen(false)}
+                  className="bg-blue-600 text-white px-6 py-3 rounded-full text-center hover:bg-blue-700 transition font-semibold uppercase text-sm"
+                >
+                  Register Now
+                </a>
               </Link>
             </div>
           </div>

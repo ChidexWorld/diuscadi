@@ -47,7 +47,7 @@ export default function EventSchedule() {
   }, []);
 
   return (
-    <section className="bg-white px-6 sm:px-12 py-16">
+    <section className="bg-white px-6 sm:px-12 py-16" id="schedule">
       <div className="max-w-6xl mx-auto">
         {/* Title */}
         <motion.h2

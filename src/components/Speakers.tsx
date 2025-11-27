@@ -83,7 +83,7 @@ const Speakers: React.FC = () => {
   const speaker = speakers[current] || null;
 
   return (
-    <section className="py-16 md:py-30 bg-white text-center">
+    <section className="py-16 md:py-30 bg-white text-center" id="speakers">
       <motion.div
         className="max-w-4xl mx-auto mb-14 px-4"
         initial="hidden"

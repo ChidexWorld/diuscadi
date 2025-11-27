@@ -1,7 +1,8 @@
-"use client"
+"use client";
 
 import React, { useState } from "react";
-import { ChevronDown, ChevronUp } from "lucide-react";
+import { ChevronDown } from "lucide-react";
+import { motion, AnimatePresence, easeOut, Variants } from "framer-motion";
 
 interface FAQ {
   question: string;
@@ -48,46 +49,92 @@ const faqs: FAQ[] = [
   },
 ];
 
+const containerVariants = {
+  hidden: {},
+  visible: {
+    transition: {
+      staggerChildren: 0.12,
+    },
+  },
+};
+
+const itemVariants: Variants = {
+  hidden: { opacity: 0, y: 30 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.45,
+      ease: easeOut,
+    },
+  },
+};
+
+
 const FAQs: React.FC = () => {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
-  const toggleFAQ = (index: number) => {
-    setOpenIndex(openIndex === index ? null : index);
-  };
-
   return (
-    <section className="py-20 px-4 bg-gradient-to-b from-white to-[#f5f9ff]">
-      <div className="max-w-3xl mx-auto">
+    <section
+      className="py-20 px-4 bg-gradient-to-b from-white to-[#f5f9ff]"
+      id="faqs"
+    >
+      <div className="max-w-5xl mx-auto">
         <h2 className="text-3xl md:text-5xl font-extrabold text-center text-[#001B3E] mb-12">
           Frequently Asked <br /> Questions
         </h2>
 
-        <div className="space-y-4">
-          {faqs.map((faq, index) => (
-            <div
-              key={index}
-              className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden"
-            >
-              <button
-                onClick={() => toggleFAQ(index)}
-                className="w-full flex justify-between items-center px-6 py-5 text-left font-semibold text-[#001B3E] hover:bg-gray-50 transition"
-              >
-                {faq.question}
-                {openIndex === index ? (
-                  <ChevronUp className="w-5 h-5" />
-                ) : (
-                  <ChevronDown className="w-5 h-5" />
-                )}
-              </button>
+        <motion.div
+          variants={containerVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.2 }}
+          className="space-y-4"
+        >
+          {faqs.map((faq, index) => {
+            const isOpen = openIndex === index;
 
-              {openIndex === index && (
-                <div className="px-6 pb-5 text-[#001B3E] text-[15px] leading-relaxed border-t border-gray-100">
-                  {faq.answer}
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
+            return (
+              <motion.div
+                key={index}
+                variants={itemVariants}
+                className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden"
+              >
+                {/* QUESTION */}
+                <button
+                  onClick={() => setOpenIndex(isOpen ? null : index)}
+                  className="w-full flex justify-between items-center px-6 py-5 text-left font-semibold text-[#001B3E] text-lg md:text-xl hover:bg-gray-50 transition"
+                >
+                  {faq.question}
+
+                  <motion.span
+                    animate={{ rotate: isOpen ? 180 : 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <ChevronDown className="w-5 h-5" />
+                  </motion.span>
+                </button>
+
+                {/* ANSWER */}
+                <AnimatePresence initial={false}>
+                  {isOpen && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.35, ease: "easeInOut" }}
+                      className="overflow-hidden"
+                    >
+                      <div className="px-6 pb-5 pt-4 text-[#001B3E] text-[15px] md:text-lg leading-relaxed border-t border-gray-100">
+                        {faq.answer}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </motion.div>
+            );
+          })}
+        </motion.div>
       </div>
     </section>
   );
