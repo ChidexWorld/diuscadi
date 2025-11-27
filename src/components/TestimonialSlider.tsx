@@ -15,14 +15,14 @@ const testimonials: Testimonial[] = [
     name: "Stephanie Nkamigbo",
     image: "/image/Stephanie-Nkamigbo.webp",
     message:
-      "Being part of the organization team for DIUSCADI 2.0 was not just an interesting experience but an amazing opportunity to work alongside people with diverse perspectives yet building meaningful contributions. The Finalist Launchpad Workshop gave me an insight of what life after school looks like...",
+      "Being part of the organization team for DIUSCADI 2.0 was not just an interesting experience but an amazing opportunity to work alongside people with diverse perspectives yet building meaningful contributions. The Finalist Launchpad Workshop gave me an insight of what life after school looks like. It was indeed a great initiative to actually educate students who are about to graduate on what to expect after graduation and how to go about it. For the first time, I actually had someone educate me on how to prepare my Curriculum Vitae and get prepared for interviews. This program positively impacted a lot in my life and I can’t wait to attend the next one.",
     bgColor: "bg-[#AFCBFF]",
   },
   {
     name: "Okoro Esther Chiamaka",
     image: "/image/Esther-Chiamaka.webp",
     message:
-      "DIUSCADI was an eye-opener. It allowed me to network, learn, and grow in ways I didn’t expect...",
+      "DIUSCADI 2023 was a fantastic event for me, and I'm proud to have been a participant. It was an event that taught me the essential skills needed for the contemporary world, and the best part was realizing that one needs little to no capital to start – for example, in digital marketing. The event provided a great networking opportunity, as I met many vibrant youths who are ready to change the world – people of like minds. It was not just about the skills; the seasoned speakers shared life stories that were incredibly inspiring. Their resilience during the early stages of their lives is truly worth emulating. It reinforced my belief that with hard work",
     bgColor: "bg-white",
   },
   {
@@ -36,7 +36,7 @@ const testimonials: Testimonial[] = [
     name: "Another Participant",
     image: "/image/Azubike-Desiree.webp",
     message:
-      "It was a transformative experience that connected me with mentors and peers...",
+      "The Life After School seminar by DIUSCADI was amazing. It covered useful skills like Entrepreneurship, interviews technique, digital marketing and even solar panel installation. I personally gained practical knowledge and skills. The dedication of the speakers was also truly commendable. I highly recommend it for students.",
     bgColor: "bg-[#AFCBFF]",
   },
 ];
